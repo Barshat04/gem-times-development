@@ -325,6 +325,7 @@ const TimeEntryScreen = () => {
                   rules={{ required: true }}
                   render={({ field: { onChange, value } }) => (
                     <Select
+                      isReadOnly={true}
                       width="170px"
                       selectedValue={value}
                       placeholder="Select"

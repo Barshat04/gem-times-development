@@ -205,7 +205,8 @@ export default function DayStartScreen() {
                 >
                   {errors && errors[`${question.sequenceNo}`] && (
                     <Box alignItems="center" justifyContent="center">
-                      <Text fontSize="med">* This question is mandatory. *</Text>
+                      <Text fontSize="md" color="red.600">
+                        * This question is mandatory. *</Text>
                     </Box>
                   )}
                   <Box
@@ -228,8 +229,9 @@ export default function DayStartScreen() {
                         rules={{ required: question.mandatory === -1 }}
                         render={({ field: { onChange, value } }) => (
                           <Select
+                            isReadOnly={true}
                             width="120px"
-                            selectedValue={value}
+                            selectedValue={typeof value === "string" ? value : undefined}
                             placeholder="Select"
                             onValueChange={onChange}
                             _selectedItem={{
@@ -249,6 +251,7 @@ export default function DayStartScreen() {
                           </Select>
                         )}
                       />
+
                     </HStack>
                   </Box>
                 </FormControl>
