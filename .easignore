@@ -1,0 +1,11 @@
+node_modules
+.expo
+android
+ios
+.vscode
+.DS_Store
+*.zip
+*.exe
+*.tar.gz
+*.apk
+*.log
