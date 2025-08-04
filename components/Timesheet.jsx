@@ -21,7 +21,7 @@ import timeUtils from "@/utils/timeUtils";
 import { TaskContext } from "@/context/TaskContext";
 
 const TimeSheet = () => {
-  const { activeTimesheet, activeTask, updateTimesheetTask, storeActiveTask } = useContext(TaskContext);
+  const { activeTimesheet, activeTask, updateTimesheetTask, storeActiveTask, setActiveTask, updateActiveClock } = useContext(TaskContext);
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -63,11 +63,11 @@ const TimeSheet = () => {
 
     const updatedTask = {
       ...selectedTask,
-      jobNo: editedFields.jobNo?.trim() || "",
-      referenceNo1: editedFields.referenceNo1?.trim() || "",
-      referenceNo2: editedFields.referenceNo2?.trim() || "",
-      referenceNo3: editedFields.referenceNo3?.trim() || "",
-      workDone: editedFields.workDone?.trim() || "",
+      jobNo: editedFields.jobNo?.trim(),
+      referenceNo1: editedFields.referenceNo1?.trim(),
+      referenceNo2: editedFields.referenceNo2?.trim(),
+      referenceNo3: editedFields.referenceNo3?.trim(),
+      workDone: editedFields.workDone?.trim(),
       originalJobNo: selectedTask.jobNo || "",
     };
 
@@ -80,6 +80,13 @@ const TimeSheet = () => {
         activeTask.jobNo === selectedTask.jobNo
       ) {
         await storeActiveTask(updatedTask);
+        // If available in your context
+        if (typeof setActiveTask === "function") {
+          setActiveTask(updatedTask); // <-- make sure to expose this in TaskContext if not already
+        }
+        if (typeof updateActiveClock === "function") {
+          await updateActiveClock(updatedTask);
+        }
       }
 
       setEditModalVisible(false);
@@ -87,6 +94,7 @@ const TimeSheet = () => {
       console.error("Failed to save task edits:", err);
     }
   };
+
 
   return (
     <Box bg="white" rounded="md">

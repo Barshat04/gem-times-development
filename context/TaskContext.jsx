@@ -65,25 +65,21 @@ export function TaskProvider({ children }) {
 
   const clockOff = async (taskData) => {
     try {
-      const currentClock = activeClock || (await getActiveClock())
-      if (!currentClock) throw new Error("No active clock session found")
+      if (!taskData) throw new Error("No task data provided for clock off.");
 
       const clockOffData = {
-        ...currentClock,
         ...taskData,
         finishTime: taskData.finishTime,
         clockedOff: true,
         type: "CLOCK_OFF",
         timestamp: new Date().toISOString(),
-      }
+      };
 
-      await clearActiveClock()
-      setActiveClock(null)
+      await clearActiveClock();
+      setActiveClock(null);
 
-      // Queue for sync
-      await storeOfflineClockAction(clockOffData)
+      await storeOfflineClockAction(clockOffData);
 
-      // Append task to local timesheet
       await appendTaskToTimesheet({
         startTime: clockOffData.startTime,
         finishTime: clockOffData.finishTime,
@@ -93,14 +89,15 @@ export function TaskProvider({ children }) {
         referenceNo2: clockOffData.referenceNo2 || "",
         referenceNo3: clockOffData.referenceNo3 || "",
         workDone: clockOffData.workDone || "",
-      })
+      });
 
-      return true
+      return true;
     } catch (error) {
-      console.error("Clock off failed:", error)
-      return false
+      console.error("Clock off failed:", error);
+      return false;
     }
-  }
+  };
+
 
   const isCurrentlyClockedOn = () => activeClock?.clockedOn && !activeClock.clockedOff
 
@@ -188,8 +185,8 @@ export function TaskProvider({ children }) {
   }
 
   // const discardTimesheet = async () => {
-  //   await clearActiveTask()
-  //   await clearActiveTimesheet()
+  //   await clearActiveTask()
+  //   await clearActiveTimesheet()
   // }
 
   const discardTimesheet = async () => {
