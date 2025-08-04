@@ -1,12 +1,8 @@
-/*
-  * Main screen
-  * Displays the following components:
-    * Time/Date: to display the current time and date.
-    * Action buttons: which control the users ability to create time entries.
-    * Timesheet: To display either the current active timesheet, or past timesheets.
-*/
-
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
+import {
+  BackHandler,
+  Platform,
+} from "react-native";
 import {
   Box,
   Text,
@@ -24,15 +20,27 @@ const MainScreen = () => {
   const { userData } = useContext(UserContext);
   const { viewPastTimesheets } = useContext(TaskContext);
 
+  // 🔒 Disable Android back button
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => true // Returning true disables default back behavior
+      );
+
+      return () => backHandler.remove(); // Cleanup on unmount
+    }
+  }, []);
+
   return (
-    <Box 
-      flex={1} 
-      p={5} 
+    <Box
+      flex={1}
+      p={5}
       bg={viewPastTimesheets ? "coolGray.200" : "coolGray.50"}
       safeArea
     >
       <Box position="absolute" top={3} right={3} zIndex={10}>
-        <DropdownMenu/>
+        <DropdownMenu />
       </Box>
 
       <VStack space={4} mt={10}>
@@ -46,13 +54,13 @@ const MainScreen = () => {
         </Text>
         <HomeDateTime />
         <ActionButtons />
-        <Box 
-          bg="white" 
-          borderRadius="md" 
-          shadow={1} 
+        <Box
+          bg="white"
+          borderRadius="md"
+          shadow={1}
           overflow="hidden"
         >
-          { !viewPastTimesheets ? (
+          {!viewPastTimesheets ? (
             <TimeSheet />
           ) : (
             <PastTimesheet />
