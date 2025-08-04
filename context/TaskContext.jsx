@@ -187,9 +187,36 @@ export function TaskProvider({ children }) {
     }
   }
 
+  // const discardTimesheet = async () => {
+  //   await clearActiveTask()
+  //   await clearActiveTimesheet()
+  // }
+
   const discardTimesheet = async () => {
-    await clearActiveTask()
-    await clearActiveTimesheet()
+    try {
+      await clearActiveTask()
+      await clearActiveTimesheet()
+      await clearActiveClock()
+      setActiveClock(null)
+
+      // Also remove any offline clock actions related to this session
+      const queue = await getStorageData("offlineClockQueue")
+      if (queue) {
+        const parsedQueue = JSON.parse(queue)
+
+        // Filter out actions related to the discarded clock session
+        const updatedQueue = parsedQueue.filter(
+          (item) =>
+            item.userID !== userData.userID ||
+            item.siteID !== site.siteID ||
+            item.forDate !== getTodayDate()
+        )
+
+        await storeData("offlineClockQueue", updatedQueue)
+      }
+    } catch (err) {
+      console.error("Failed to fully discard timesheet:", err)
+    }
   }
 
   const clearActiveTimesheet = async () => {
