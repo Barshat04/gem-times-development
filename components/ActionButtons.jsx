@@ -1,18 +1,10 @@
-/*
-  * Action buttons
-  * Checks if a user is of type clock on/off or manual entry.
-  * handleClokcON() opens time-entry screen in "clock on" mode.
-  * handleClockOff() opens time-entry screen in "clock off" mode.
-  * handleManualEntry() opens time-entry screen in "manual" mode.
-  * handleSubmit will route a user to either "submit timesheet" or "day off" depending on the no of current tasks.
-*/
-
 import React, { useEffect, useState, useContext } from "react";
+import { Alert } from "react-native";
 import { router } from "expo-router";
-import { 
-  HStack, 
-  Button, 
-  Spinner, 
+import {
+  HStack,
+  Button,
+  Spinner,
   Text
 } from "native-base";
 import { UserContext } from "@/context/UserContext";
@@ -20,10 +12,18 @@ import { TaskContext } from "@/context/TaskContext";
 
 function ActionButtons() {
   const { userData } = useContext(UserContext);
-  const { activeTimesheet, activeTask, taskLoading, viewPastTimesheets } = useContext(TaskContext);
+  const {
+    activeTimesheet,
+    activeTask,
+    taskLoading,
+    viewPastTimesheets,
+    pastTimesheets,
+    setViewPastTimesheets,
+    isCurrentlyClockedOn
+  } = useContext(TaskContext);
+
   const [manualEntry, setManualEntry] = useState(false);
 
-  // Whenever we get userData from the UserContext, set the timesheet type (clock or manual mode).
   useEffect(() => {
     if (userData?.timeEntryType === "M") {
       setManualEntry(true);
@@ -32,32 +32,47 @@ function ActionButtons() {
     }
   }, [userData]);
 
-  // Open the time-entry screen in "clock-on" mode.
+  const getTodayDate = () => new Date().toISOString().split("T")[0];
+
+  const hasSubmittedToday = () => {
+    const today = getTodayDate();
+    return pastTimesheets?.some((ts) => ts.forDate === today);
+  };
+
   const handleClockOn = () => {
+    if (hasSubmittedToday()) {
+      Alert.alert(
+        "Timesheet Already Submitted",
+        "You have already submitted a timesheet for today. Here's your previous timesheets:",
+        [{ text: "OK", onPress: () => setViewPastTimesheets(true) }]
+      );
+      return;
+    }
+
+    if (isCurrentlyClockedOn()) {
+      Alert.alert("Already Clocked On", "You are currently clocked on. Please clock off to start a new session.");
+      return;
+    }
+
     router.push("/time-entry?mode=clock_on");
   };
 
-  // Open the time-entry screen in "clock off" mode.
   const handleClockOff = () => {
     router.push(`/time-entry?mode=clock_off`);
   };
 
-  // Open the time-entry screen in "manual" mode.
   const handleManualEntry = () => {
     router.push("/time-entry?mode=manual");
   };
 
-  // Go to submit timesheet.
   const handleSubmit = () => {
     router.push("/submit-timesheet");
   };
 
-  // Go to day off.
   const handleDayOff = () => {
     router.push("/day-off");
-  }
+  };
 
-  // Spinner if userData still loading.
   if (!userData) {
     return (
       <HStack space={4} justifyContent="center" mb={5}>
@@ -65,7 +80,7 @@ function ActionButtons() {
       </HStack>
     );
   }
-  
+
   return (
     <HStack space={3} justifyContent="space-around" mb={5}>
       {manualEntry ? (
@@ -79,9 +94,7 @@ function ActionButtons() {
             px={6}
             onPress={handleManualEntry}
           >
-            <Text color="white" fontWeight="600">
-              Add Time
-            </Text>
+            <Text color="white" fontWeight="600">Add Time</Text>
           </Button>
 
           {activeTimesheet?.tasks?.length ? (
@@ -95,12 +108,9 @@ function ActionButtons() {
               onPress={handleSubmit}
               isDisabled={!!taskLoading || !!viewPastTimesheets}
             >
-              <Text color="white" fontWeight="600">
-                Submit
-              </Text>
+              <Text color="white" fontWeight="600">Submit</Text>
             </Button>
           ) : (
-
             <Button
               bg="emerald.600"
               _pressed={{ bg: "emerald.800" }}
@@ -111,9 +121,7 @@ function ActionButtons() {
               isDisabled={!!activeTask || !!viewPastTimesheets}
               onPress={handleDayOff}
             >
-              <Text color="white" fontWeight="600">
-                Day Off
-              </Text>
+              <Text color="white" fontWeight="600">Day Off</Text>
             </Button>
           )}
         </>
@@ -126,12 +134,10 @@ function ActionButtons() {
             borderRadius={8}
             py={3}
             px={6}
-            isDisabled={!!activeTask || !!viewPastTimesheets}  
+            isDisabled={!!activeTask || !!viewPastTimesheets}
             onPress={handleClockOn}
           >
-            <Text color="white" fontWeight="500">
-              Clock on
-            </Text>
+            <Text color="white" fontWeight="500">Clock on</Text>
           </Button>
 
           <Button
@@ -144,9 +150,7 @@ function ActionButtons() {
             isDisabled={!activeTask || !!viewPastTimesheets}
             onPress={handleClockOff}
           >
-            <Text color="white" fontWeight="500">
-              Clock off
-            </Text>
+            <Text color="white" fontWeight="500">Clock off</Text>
           </Button>
 
           {activeTimesheet?.tasks?.length ? (
@@ -160,11 +164,9 @@ function ActionButtons() {
               onPress={handleSubmit}
               isDisabled={!!taskLoading || !!viewPastTimesheets}
             >
-              <Text color="white" fontWeight="600">
-                Submit
-              </Text>
+              <Text color="white" fontWeight="600">Submit</Text>
             </Button>
-          ): (
+          ) : (
             <Button
               bg="emerald.600"
               _pressed={{ bg: "emerald.800" }}
@@ -175,9 +177,7 @@ function ActionButtons() {
               isDisabled={!!activeTask || !!viewPastTimesheets}
               onPress={handleDayOff}
             >
-              <Text color="white" fontWeight="600">
-                Day Off
-              </Text>
+              <Text color="white" fontWeight="600">Day Off</Text>
             </Button>
           )}
         </>
