@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
+const BASE_URL = "https://gore-api.futureaccess.com.au";
 // Add an action to the offline queue
 export const addToQueue = async (action) => {
   try {
@@ -22,7 +22,6 @@ export const addToQueue = async (action) => {
   }
 };
 
-// Sync the queue - called when device is back online
 // Sync the queue - called when device is back online
 export const syncQueue = async () => {
   try {
@@ -60,6 +59,9 @@ export const syncQueue = async () => {
           );
         }
         // Add other action types here if needed
+
+        // Don't add successfully processed actions back to the queue
+        // This is intentionally left empty to skip adding the action back
       } catch (innerErr) {
         console.error(
           `[syncQueue] Error processing action ID: ${action.id}:`,
@@ -82,9 +84,17 @@ export const syncQueue = async () => {
 
 const submitDayStartResponses = async (dayStartData) => {
   try {
-    const response = await axios.post(
-      "https://gore-api.futureaccess.com.au/TSAPI/daystartresponses",
-      dayStartData
+    console.log("[submitDayStartResponses] Submitting day start responses:", {
+      siteID: dayStartData.siteID,
+      userID: dayStartData.userID,
+      forDate: dayStartData.forDate,
+      responseCount: dayStartData.responses?.length || 0,
+    });
+
+    await axios.post(`${BASE_URL}/TSAPI/daystartresponses`, dayStartData);
+    console.log(
+      "[submitDayStartResponses] Successfully submitted day start responses:",
+      response.data
     );
     return response.data; // Assuming it returns a success message or data.
   } catch (error) {
@@ -99,21 +109,55 @@ const submitDayStartResponses = async (dayStartData) => {
 // Helper function to submit timesheet data
 const submitTimesheet = async (timesheetData) => {
   try {
-    await axios.post(
-      "https://gore-api.futureaccess.com.au/TSAPI/upload",
+    console.log("[submitTimesheet] Submitting timesheet to API:", {
+      siteID: timesheetData.timesheet.siteID,
+      userID: timesheetData.timesheet.userID,
+      forDate: timesheetData.timesheet.forDate,
+    });
+
+    // First, submit the timesheet data and store the response in a variable
+    const uploadResponse = await axios.post(
+      `${BASE_URL}/TSAPI/upload`,
       timesheetData.timesheet
     );
-    if (timesheetData.responses && timesheetData.responses.length > 0) {
-      // Added null/undefined check for responses
+
+    console.log(
+      "[submitTimesheet] Timesheet upload successful:",
+      uploadResponse.data
+    );
+
+    // Then, if there are responses, submit those too
+    if (
+      timesheetData.responses &&
+      Array.isArray(timesheetData.responses) &&
+      timesheetData.responses.length > 0
+    ) {
       try {
-        await axios.post(
-          "https://gore-api.futureaccess.com.au/TSAPI/timesheetquestionresponse",
+        console.log(
+          "[submitTimesheet] Submitting timesheet question responses:",
           {
-            responses: timesheetData.responses,
+            count: timesheetData.responses.length,
             siteID: timesheetData.timesheet.siteID,
             userID: timesheetData.timesheet.userID,
-            forDate: timesheetData.timesheet.forDate,
           }
+        );
+
+        const responseData = {
+          responses: timesheetData.responses,
+          siteID: timesheetData.timesheet.siteID,
+          userID: timesheetData.timesheet.userID,
+          forDate: timesheetData.timesheet.forDate,
+        };
+
+        // Submit the responses and store the response in a variable
+        const responseUploadResponse = await axios.post(
+          `${BASE_URL}/TSAPI/timesheetquestionresponse`,
+          responseData
+        );
+
+        console.log(
+          "[submitTimesheet] Question responses upload successful:",
+          responseUploadResponse.data
         );
       } catch (err) {
         console.error(
@@ -123,7 +167,11 @@ const submitTimesheet = async (timesheetData) => {
         // Important: Re-throw the error so syncQueue knows it failed
         throw err;
       }
+    } else {
+      console.log("[submitTimesheet] No question responses to submit");
     }
+
+    return true; // Indicate successful submission
   } catch (err) {
     console.error(
       "[submitTimesheet] Error submitting timesheet (upload or initial error):",
