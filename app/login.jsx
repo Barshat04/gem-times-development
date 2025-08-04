@@ -79,11 +79,15 @@ export default function LoginScreen() {
             // await logout();
             setFormError("Could not load site data. Please log in again.");
           }
+          /*
+          // Not needed, siteID rarely requires a change, once set no need to re ask.
         } else if (!siteID && !site?.siteID) {
           // If no site ID is set from context or form, and no user is authenticated, prompt for site ID
           setSiteIdMissing(true);
           toggleSiteModal();
+          */
         }
+
       }
     };
     checkAuthAndNavigate();

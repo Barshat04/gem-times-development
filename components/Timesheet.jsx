@@ -181,68 +181,92 @@ const TimeSheet = () => {
       </HStack>
 
       <Modal isOpen={editModalVisible} onClose={() => setEditModalVisible(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ width: '100%' }}>
-          {/* Changed maxWidth to a wider percentage. You can also remove it. */}
-          <Modal.Content>
-            <Modal.CloseButton />
-            <Modal.Header>Edit Task</Modal.Header>
-            <Modal.Body>
-              {/* Ensure ScrollView is here to handle content overflow */}
-              <ScrollView>
+        <Modal.Content width="85%" maxHeight="90%">
+          <Modal.CloseButton />
+          <Modal.Header>Edit Task</Modal.Header>
+
+          <Modal.Body>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={{ flex: 1 }}
+            >
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 100 }}
+              >
                 <VStack space={3}>
                   <FormControl>
                     <FormControl.Label>Job No.</FormControl.Label>
                     <Input
                       value={editedFields.jobNo}
-                      onChangeText={(text) => setEditedFields((prev) => ({ ...prev, jobNo: text }))}
+                      onChangeText={(text) =>
+                        setEditedFields((prev) => ({ ...prev, jobNo: text }))
+                      }
                     />
                   </FormControl>
+
                   <FormControl>
                     <FormControl.Label>Reference No. 1</FormControl.Label>
                     <Input
                       value={editedFields.referenceNo1}
-                      onChangeText={(text) => setEditedFields((prev) => ({ ...prev, referenceNo1: text }))}
+                      onChangeText={(text) =>
+                        setEditedFields((prev) => ({ ...prev, referenceNo1: text }))
+                      }
                     />
                   </FormControl>
+
                   <FormControl>
                     <FormControl.Label>Reference No. 2</FormControl.Label>
                     <Input
                       value={editedFields.referenceNo2}
-                      onChangeText={(text) => setEditedFields((prev) => ({ ...prev, referenceNo2: text }))}
+                      onChangeText={(text) =>
+                        setEditedFields((prev) => ({ ...prev, referenceNo2: text }))
+                      }
                     />
                   </FormControl>
+
                   <FormControl>
                     <FormControl.Label>Reference No. 3</FormControl.Label>
                     <Input
                       value={editedFields.referenceNo3}
-                      onChangeText={(text) => setEditedFields((prev) => ({ ...prev, referenceNo3: text }))}
+                      onChangeText={(text) =>
+                        setEditedFields((prev) => ({ ...prev, referenceNo3: text }))
+                      }
                     />
                   </FormControl>
+
                   <FormControl>
                     <FormControl.Label>Comments / Work Done</FormControl.Label>
                     <Input
                       value={editedFields.workDone}
-                      onChangeText={(text) => setEditedFields((prev) => ({ ...prev, workDone: text }))}
-                      // Use multiline and a taller height for comments
+                      onChangeText={(text) =>
+                        setEditedFields((prev) => ({ ...prev, workDone: text }))
+                      }
                       multiline
                       height={100}
-                      textAlignVertical="top" // Ensures text starts at the top
+                      textAlignVertical="top"
                     />
                   </FormControl>
                 </VStack>
               </ScrollView>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button.Group space={2}>
-                <Button onPress={() => setEditModalVisible(false)} variant="ghost">
-                  Cancel
-                </Button>
-                <Button onPress={handleSave}>Save</Button>
-              </Button.Group>
-            </Modal.Footer>
-          </Modal.Content>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button.Group space={2}>
+              <Button
+                onPress={() => setEditModalVisible(false)}
+                variant="ghost"
+              >
+                Cancel
+              </Button>
+              <Button onPress={handleSave}>Save</Button>
+            </Button.Group>
+          </Modal.Footer>
+        </Modal.Content>
       </Modal>
+
+
     </Box>
   );
 };
