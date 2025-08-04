@@ -11,6 +11,9 @@ import {
   Button,
   Divider,
 } from "native-base";
+import { BackHandler } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import timeUtils from "@/utils/timeUtils";
 import { TaskContext } from "@/context/TaskContext";
@@ -19,6 +22,7 @@ import { SiteContext } from "@/context/SiteContext";
 
 const PastTimesheet = () => {
   const { userData } = useContext(UserContext);
+  const navigation = useNavigation();
   const { site } = useContext(SiteContext);
   const { pastTimesheets, pastTasks, pastSubmitQuestions } = useContext(TaskContext);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -124,6 +128,24 @@ const PastTimesheet = () => {
       return task.timeFor || "--";
     }
   };
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        console.log("Back button pressed! Navigating to mainscreen.");
+        // Navigate to main screen instead of exiting the app
+        // Replace 'Main' with your actual route name if different
+        navigation.navigate("mainscreen");
+        return true; // prevent default behavior (app exit)
+      };
+
+      BackHandler.addEventListener("hardwareBackPress", onBackPress);
+
+      return () => {
+        BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+      };
+    }, [])
+  );
+
 
   const renderContent = () => {
     if (!timesheetDates || timesheetDates.length === 0) {
