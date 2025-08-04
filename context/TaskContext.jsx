@@ -58,6 +58,11 @@ export function TaskProvider({ children }) {
     }
   }
 
+  const updateActiveClock = async (updatedClock) => {
+    await storeActiveClock(updatedClock);
+    setActiveClock(updatedClock);
+  };
+
   const clockOff = async (taskData) => {
     try {
       const currentClock = activeClock || (await getActiveClock())
@@ -317,6 +322,26 @@ export function TaskProvider({ children }) {
     tryLoad()
   }, [site, userData])
 
+  const updateTimesheetTask = async (updatedTask) => {
+    let ts = activeTimesheet || (await getActiveTimesheet());
+    if (!ts) return;
+
+    const updatedTasks = ts.tasks.map((task) => {
+      const isSameTask =
+        task.startTime === updatedTask.startTime &&
+        task.timeFor === updatedTask.timeFor &&
+        task.jobNo === updatedTask.originalJobNo;
+
+      return isSameTask ? { ...task, ...updatedTask } : task;
+    });
+
+    const updatedTimesheet = { ...ts, tasks: updatedTasks };
+    await storeData("activeTimesheet", updatedTimesheet);
+    setActiveTimesheet(updatedTimesheet);
+  };
+
+
+
   return (
     <TaskContext.Provider
       value={{
@@ -345,10 +370,13 @@ export function TaskProvider({ children }) {
         activeClock,
         isClockSyncing,
         clockOn,
+        updateActiveClock,
         clockOff,
         isCurrentlyClockedOn,
         getCurrentClockSession,
         isConnected,
+        updateTimesheetTask,
+
       }}
     >
       {children}
